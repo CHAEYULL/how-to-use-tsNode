@@ -6,7 +6,7 @@
 //nodemon --exec ts-node server.ts
 import 'dotenv/config'
 //몽고디비 세팅
-import {Db, MongoClient, ObjectId} from 'mongodb'
+import {Db, MongoClient, ObjectId, WithId} from 'mongodb'
 //익스프레스 기본 세팅
 import express, { Request, Response } from 'express';
 const app = express()
@@ -99,4 +99,11 @@ app.post('/add', async (요청:Request, 응답:Response)=>{
         console.log(e)
         응답.status(500).send('서버에러남')
     }
+})
+
+
+app.get('/detail/:id', async (요청:Request, 응답:Response)=>{
+    let 상세페이지:any = await db.collection('post').findOne({ _id : new ObjectId(요청.params.id) })
+    console.log(상세페이지)
+    응답.render('detail.ejs',{상세페이지 : 상세페이지})
 })

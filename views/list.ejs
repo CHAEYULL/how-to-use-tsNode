@@ -13,7 +13,9 @@
         <div class="white-bg">
             <% 게시물.forEach(function(a,i){ %>
                 <div class="list-box">
-                    <h4><%= 게시물[i].title%></h4>
+                    <h4>
+                        <a href="/detail/<%= 게시물[i]._id%>"><%= 게시물[i].title%></a>
+                    </h4>
                     <p><%= 게시물[i].content%></p>
                  </div>
             <% }); %>
