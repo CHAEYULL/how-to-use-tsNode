@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link rel="stylesheet" href="normalize.css">
+    <link rel="stylesheet" href="main.css">
+</head>
+<body>
+    <!-- <%- include('header.ejs')%> -->
+    <main class="grey-bg">
+        <div class="white-bg">
+            <!-- <% 게시물.forEach((function(a,i){%> -->
+                <!-- <Post title="<%= 게시물[i].title %>" content="<%= 게시물[i].content %>"></Post> -->
+           <!-- <%});%> -->
+          </div> 
+    </main>
+<script>
+        // class post extends HTMLElement {
+        //     connectedCallback(){
+        //         let title = this.getAttribute('title')
+        //         let content = this.getAttribute('content')
+        //         document.querySelector('.white-bg').innerHTML = /*html*/`
+        //         <div class="list-box">
+        //             <h4>${title}</h4>
+        //             <p>${content}</p>
+        //         </div>
+        //         `
+        //     }
+        // }
+        // customElements.define('Post',post)
+</script>
+</body>
+
+</html>
