@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link rel="stylesheet" href="/main.css">
+    <link rel="stylesheet" href="/normalize.css">
+</head>
+<body>
+    <%- include('header.ejs')%>
+    <main class="grey-bg">
+        <form class="form-box" action="/update" method="POST">
+            <h4>게시물 수정</h4>
+            <input style="display: none;" id="title" name="id" value="<%=게시물정보._id%>">
+            <input id="title" name="title" value="<%=게시물정보.title%>">
+            <input id="content" name="content" value="<%=게시물정보.content%>">
+            <button type="submit">수정</button>
+        </form>
+    </main> 
+</body>
+<script>
+    var formData = new FormData();
+    formData.append('title', document.getElementById('title').value);
+    formData.append('content', document.getElementById('content').value);
+    document.querySelector('form').addEventListener('submit', function(e){
+        if( document.querySelector('#title').value == '' || document.querySelector('#content').value == ''){
+            e.preventDefault();
+            alert('아무내용도 안적었는디?');
+        } else if (document.querySelector('#title').value == null || document.querySelector('#content').value == null){
+            e.preventDefault();
+            alert('null뜨는데 무슨일이니')
+        }
+    });
+</script>
+</html>

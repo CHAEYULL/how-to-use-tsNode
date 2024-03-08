@@ -88,6 +88,8 @@ app.post('/add', async (요청:Request, 응답:Response)=>{
     try {
         if (요청.body.title == '' || 요청.body.content == ''){
             응답.send('아무내용도 안적었슴당')
+        } else if ( 요청.body.title.length > 1000 || 요청.body.content.length > 5000) {
+            응답.send('너무 길어요 ㅠㅠ')
         } else {
             await db.collection<PostAddType>('post').insertOne({
                 title : 요청.body.title,
@@ -107,3 +109,37 @@ app.get('/detail/:id', async (요청:Request, 응답:Response)=>{
     console.log(상세페이지)
     응답.render('detail.ejs',{상세페이지 : 상세페이지})
 })
+
+app.get('/edit/:id', async (요청:Request, 응답:Response)=>{
+    let 게시물정보 = await db.collection('post').findOne({_id : new ObjectId(요청.params.id)})
+    응답.render('edit.ejs', {게시물정보 : 게시물정보});
+})
+
+
+app.post('/update', async (요청:Request, 응답:Response)=>{
+    let 게시물id:ObjectId = 요청.body.id
+
+    await db.collection<PostType>('post').updateOne(
+        {_id : new ObjectId(게시물id) },
+        {$set: {title : 요청.body.title,
+                content : 요청.body.content}
+        })
+        try {
+            if (요청.body.title == '' || 요청.body.content == ''){
+                응답.send('아무내용도 안적었슴당')
+            } else if ( 요청.body.title.length > 1000 || 요청.body.content.length > 5000) {
+                응답.send('너무 길어요 ㅠㅠ')
+            } else {
+                await db.collection<PostType>('post').updateOne(
+                    {_id : new ObjectId(게시물id) },
+                    {$set: {title : 요청.body.title,
+                            content : 요청.body.content}
+                    })     
+                응답.redirect('/list')
+            }
+        } catch(e){
+            console.log(e)
+            응답.status(500).send('서버에러남')
+        }
+})
+

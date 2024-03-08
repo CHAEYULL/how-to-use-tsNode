@@ -11,6 +11,8 @@
     <%- include('header.ejs')%>
     <div class="grey-bg">
         <div class="detail-bg">
+            <a href="/edit/<%= 상세페이지._id%>">✏️</a>
+            <h4 style="display: none;"><%=상세페이지._id%></h4>
             <h4><%=상세페이지.title%></h4>
             <p><%=상세페이지.content%></p>
         </div> 
