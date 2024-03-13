@@ -80,6 +80,9 @@ header :after {
   margin-top: 20px;
   color: grey;
 }
+.list-box span {
+  cursor: pointer;
+}
 
 
 input,div {

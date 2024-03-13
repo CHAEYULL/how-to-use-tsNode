@@ -143,3 +143,9 @@ app.post('/update', async (요청:Request, 응답:Response)=>{
         }
 })
 
+app.delete('/delete', async (요청:Request, 응답:Response)=>{
+    let 요청쿼리:any = 요청.query
+    let 삭제할id:ObjectId = 요청쿼리.docid
+    await db.collection('post').deleteOne({_id : new ObjectId(삭제할id)});
+    // console.log(요청.query);
+})

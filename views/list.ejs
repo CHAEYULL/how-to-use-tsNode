@@ -11,31 +11,40 @@
     <%- include('header.ejs')%>
     <main class="grey-bg">
         <div class="white-bg">
-            <% 게시물.forEach(function(a,i){ %>
+            <% 게시물.reverse().forEach(function(a,i){ %>
                 <div class="list-box">
                     <h4>
                         <a href="/detail/<%= 게시물[i]._id%>"><%= 게시물[i].title%></a>
                         <a href="/edit/<%= 게시물[i]._id%>">✏️</a>
+                        <span class="delete" data-id="<%= 게시물[i]._id%>">🗑️</span>
                     </h4>
                     <p><%= 게시물[i].content%></p>
                  </div>
             <% }); %>
           </div> 
     </main>
-<script>
-    //SSE 서버에서 받기
-    let eventSource = new EventSource('/stream/list')
-    eventSource.addEventListener('post',function(e){
-        let 가져온데이터 = JSON.parse(e.data); //데이터가 json형태로 와서 다시 오브젝트로 바꿔줘야함
-        console.log(가져온데이터)
-        document.querySelector('.white-bg').insertAdjacentHTML('afterbegin',/*html*/`
-            <div class="list-box">
-                <h4>${가져온데이터.title}</h4>
-                <p>${가져온데이터.content}</p>
-            </div>
-        `)
-    })
-
-</script>
 </body>
+<script>
+                //SSE 서버에서 받기
+                let eventSource = new EventSource('/stream/list')
+                eventSource.addEventListener('post',function(e){
+                let 가져온데이터 = JSON.parse(e.data); //데이터가 json형태로 와서 다시 오브젝트로 바꿔줘야함
+                console.log(가져온데이터)
+                document.querySelector('.white-bg').insertAdjacentHTML('afterbegin',/*html*/`
+                <div class="list-box">
+                    <h4>${가져온데이터.title}</h4>
+                    <p>${가져온데이터.content}</p>
+                </div>
+                    `)
+                })
+            window.onload = function(){
+            for (var i = 0; i <= "<%= 게시물.length%>"; i++){
+                document.querySelectorAll('.delete')[i].addEventListener('click', function(e){
+                fetch('/delete?docid=' + e.target.dataset.id, {
+                method : 'DELETE',
+                 })
+              }) 
+            }
+    }
+</script>
 </html>
