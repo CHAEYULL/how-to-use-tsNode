@@ -20,7 +20,7 @@ app.use(express.urlencoded({ extended: true }))
 //여기부터
 let db : Db
 let changeStream: any;
-const url = "mongodb+srv://CHAEYULL:Firstrjtm1!@cluster0.kerfxac.mongodb.net/?retryWrites=true&w=majority";//env 파일에서 가져다쓰고싶으면 process.env.변수명
+const url = process.env.URL;//env 파일에서 가져다쓰고싶으면 process.env.변수명
 new MongoClient(url).connect().then((client) => {
   console.log('DB연결성공')
   db = client.db('forum')
