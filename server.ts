@@ -64,34 +64,34 @@ passport.use(new LocalStrategy(async (입력한아이디: string, 입력한비�
       return cb(null, false, { message: '비번불일치' });
     }
   }))
-interface User {
-    _id : ObjectId;
-    username : string;
-    password : string
-}
-  passport.serializeUser((user:any, done:any) => {
-    console.log(user);
-    process.nextTick(() => {
-        if (typeof user._id === 'object' && typeof user.username === 'string') {
-            done(null, { id: user._id, username: user.username });
-        } else {
-            console.log('에러남');
-        }
-    });
-});
+// interface User {
+//     _id : ObjectId;
+//     username : string;
+//     password : string
+// }
+//   passport.serializeUser((user, done) => {
+//     console.log(user);
+//     process.nextTick(() => {
+//         if (typeof user._id === 'object' && typeof user.username === 'string') {
+//             done(null, { id: user._id, username: user.username });
+//         } else {
+//             console.log('에러남');
+//         }
+//     });
+// });
 
-  passport.deserializeUser(async (user: any, done: any) => {
-    if (!user) {
-        return done(null, null); // 유저가 없는 경우에는 null 반환
-    }
-    const result = await db.collection<User>('user').findOne({ _id: new ObjectId(user.id) });
-    if (!result) {
-        return done(null, null); // 결과가 없는 경우에는 null 반환
-    }
-    process.nextTick(() => {
-        return done(null, result); // 결과 반환
-    });
-});
+//   passport.deserializeUser(async (user, done: any) => {
+//     if (!user) {
+//         return done(null, null); // 유저가 없는 경우에는 null 반환
+//     }
+//     const result = await db.collection<User>('user').findOne({ _id: new ObjectId(user.id) });
+//     if (!result) {
+//         return done(null, null); // 결과가 없는 경우에는 null 반환
+//     }
+//     process.nextTick(() => {
+//         return done(null, result); // 결과 반환
+//     });
+// });
 
 
 //여기까지 복붙해서 쓰면됨
@@ -184,8 +184,9 @@ app.post('/add', async (요청:Request, 응답:Response)=>{
 
 app.get('/detail/:id', async (요청:Request, 응답:Response)=>{
     let 상세페이지:any = await db.collection('post').findOne({ _id : new ObjectId(요청.params.id) })
+    let 댓글 = await db.collection('comment').find({ parentId : new ObjectId(요청.params.id) }).toArray()
     console.log(상세페이지)
-    응답.render('detail.ejs',{상세페이지 : 상세페이지})
+    응답.render('detail.ejs',{상세페이지 : 상세페이지, 댓글 : 댓글})
 })
 
 app.get('/edit/:id', async (요청:Request, 응답:Response)=>{
@@ -228,6 +229,27 @@ app.delete('/delete', async (요청:Request, 응답:Response)=>{
     // console.log(요청.query);
 })
 
+
+
+passport.serializeUser((user, done) => {
+    console.log(user)
+    process.nextTick(() => {
+      done(null, { id: user._id, username: user.username })
+    })
+})
+
+passport.deserializeUser( async (user, done) => {
+    let result = await db.collection('user').findOne({
+        _id : new ObjectId(user.id)
+    })
+    delete result.password
+    process.nextTick(() => {
+      return done(null, user)
+    })
+  })
+
+
+
 app.get('/login', (요청:Request, 응답:Response)=>{
     console.log(요청.user)
     응답.render('login.ejs')
@@ -267,6 +289,20 @@ app.post('/register', async (요청: Request, 응답: Response) => {
 
 
 app.get('/mypage', async (요청:Request, 응답:Response)=>{
-    //let 유저정보 = await db.collection('post').findOne({ username : 요청.user})
-    응답.render('mypage.ejs')
+    let 유저정보 = await db.collection('post').findOne({ username : 요청.user})
+    응답.render('mypage.ejs',{유저정보 : 유저정보})
 })
+
+// app.post('/comment', async (요청:Request, 응답:Response)=>{
+//     let 사용자아이디:ObjectId = 요청.user._id; 
+//     let 댓글내용:String = 요청.body.content;
+//     let 사용자:String = 요청.user.username;
+//     let 작성글아이디:ObjectId = 요청.body.parentId;
+//     await db.collection('comment').insertOne({
+//         content : 댓글내용,
+//         writerId : new ObjectId(사용자아이디),
+//         writer : 사용자,
+//         parentId : new ObjectId(작성글아이디)
+//     })
+//     응답.redirect('back')
+// })

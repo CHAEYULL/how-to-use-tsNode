@@ -15,6 +15,19 @@
             <h4 style="display: none;"><%=상세페이지._id%></h4>
             <h4><%=상세페이지.title%></h4>
             <p><%=상세페이지.content%></p>
+            <hr style="margin-top: 60px">
+        <div>
+            <br>
+        <p><strong>작성자</strong> 댓글내용</p>
+            <br>
+        </div>
+        <form action="/comment" method="POST">
+          <input name="content">
+          <input name="parentId" value="<%= 상세페이지._id %>" style="display: none">
+          <button type="submit">댓글작성</button>
+        </form>
+        <br>
+  
         </div> 
     </div>
 </body>
