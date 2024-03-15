@@ -4,7 +4,10 @@
  */
 //테스트 코드 작성하려면 npm install jest --save-dev
 //nodemon --exec ts-node server.ts
+//env 세팅
 import 'dotenv/config'
+//비크립트 설치  npm install -D @types/bcrypt
+import bcrypt from 'bcrypt'
 //몽고디비 세팅
 import {Db, MongoClient, ObjectId, WithId} from 'mongodb'
 //익스프레스 기본 세팅
@@ -17,10 +20,85 @@ app.set('view engine', 'ejs')
 //요청.body 쓰려면 필요한 세팅 
 app.use(express.json())
 app.use(express.urlencoded({ extended: true }))
+//패스포트 라이브러리 추가 npm uninstall @types/passport-local passport-local
+//npm install passport-local @types/passport-local
+//패스포트 라이브러리 세팅
+import session from 'express-session'
+import passport from 'passport'
+import { Strategy as LocalStrategy } from 'passport-local';
+//세션 저장할 몽고 커넥트 설정 npm install connect-mongo @types/connect-mongo
+import MongoStore from 'connect-mongo';
+app.use(session({
+    resave : false,
+    saveUninitialized : false,
+    secret: 'Firstrjtm1!',
+    cookie : {maxAge : 1000 * 60},
+    store: MongoStore.create({
+      mongoUrl : process.env.URL,
+      dbName: 'forum',
+    })
+  })) 
+app.use(passport.initialize())
+app.use(session({
+  secret: 'dhkswjseogkrchdnfxmfkzoqtydWkdwkftodrlsdkscofud$@**#%(@',
+  resave : false,
+  saveUninitialized : false,
+  cookie : {
+    maxAge : 60 * 60 * 24000
+  },
+  store : MongoStore.create({
+    mongoUrl : process.env.URL,
+    dbName : 'forum'
+  })
+}))
+//여기까지
+//여기부터는 세션 테이블 만들어주는 함수 설정
+passport.use(new LocalStrategy(async (입력한아이디: string, 입력한비번: string, cb: Function) => {
+    let result = await db.collection('user').findOne({ username : 입력한아이디})
+    if (!result) {
+      return cb(null, false, { message: '아이디 DB에 없음' })
+    }
+    if (await bcrypt.compare(입력한비번, result.password)) {
+      return cb(null, result)
+    } else {
+      return cb(null, false, { message: '비번불일치' });
+    }
+  }))
+interface User {
+    _id : ObjectId;
+    username : string;
+    password : string
+}
+  passport.serializeUser((user:any, done:any) => {
+    console.log(user);
+    process.nextTick(() => {
+        if (typeof user._id === 'object' && typeof user.username === 'string') {
+            done(null, { id: user._id, username: user.username });
+        } else {
+            console.log('에러남');
+        }
+    });
+});
+
+  passport.deserializeUser(async (user: any, done: any) => {
+    if (!user) {
+        return done(null, null); // 유저가 없는 경우에는 null 반환
+    }
+    const result = await db.collection<User>('user').findOne({ _id: new ObjectId(user.id) });
+    if (!result) {
+        return done(null, null); // 결과가 없는 경우에는 null 반환
+    }
+    process.nextTick(() => {
+        return done(null, result); // 결과 반환
+    });
+});
+
+
+//여기까지 복붙해서 쓰면됨
 //여기부터
 let db : Db
 let changeStream: any;
-const url = process.env.URL;//env 파일에서 가져다쓰고싶으면 process.env.변수명
+const url:string = process.env.URL as string;//env 파일에서 가져다쓰고싶으면 process.env.변수명
 new MongoClient(url).connect().then((client) => {
   console.log('DB연결성공')
   db = client.db('forum')
@@ -148,4 +226,47 @@ app.delete('/delete', async (요청:Request, 응답:Response)=>{
     let 삭제할id:ObjectId = 요청쿼리.docid
     await db.collection('post').deleteOne({_id : new ObjectId(삭제할id)});
     // console.log(요청.query);
+})
+
+app.get('/login', (요청:Request, 응답:Response)=>{
+    console.log(요청.user)
+    응답.render('login.ejs')
+})
+app.post('/login', async (요청:Request, 응답:Response, next:any)=>{
+    passport.authenticate('local', (error:any, user:any, info:any) => {
+        if (error) return 응답.status(500).json(error)
+        if (!user) return 응답.status(401).json(info.message)
+        요청.logIn(user, (err) => {
+          if (err) return next(err)
+          응답.redirect('/')
+        })
+    })(요청, 응답, next)
+})
+
+app.get('/register', (요청:Request, 응답:Response)=>{
+    응답.render('register.ejs')
+})
+app.post('/register', async (요청: Request, 응답: Response) => {
+    try {
+        const existingUser = await db.collection('user').findOne({ username: 요청.body.username });
+        if (existingUser) {
+            응답.send('아이디 이미 있습니다 ㅠㅠ');
+        } else {
+            let 해시: string = await bcrypt.hash(요청.body.password, 10);
+            await db.collection('user').insertOne({
+                username: 요청.body.username,
+                password: 해시
+            });
+            응답.redirect('/');
+        }
+    } catch (error) {
+        console.log('에러남', error);
+        응답.send('에러남');
+    }
+});
+
+
+app.get('/mypage', async (요청:Request, 응답:Response)=>{
+    //let 유저정보 = await db.collection('post').findOne({ username : 요청.user})
+    응답.render('mypage.ejs')
 })
